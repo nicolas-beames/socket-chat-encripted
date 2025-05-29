@@ -16,17 +16,16 @@ def receive():
             else:
                 print(message)
         except:
-            print("An error occurred!")
+            print("Fechando conexão...")
             client.close()
             break
 
 def write():
     while True:
-        inp = input("")
         message = f'{nickname}: {input("")}'
         client.send(message.encode("utf-8"))
 
-        if inp.lower() == "sair":
+        if message.endswith("sair"):
             client.close()
             break
 

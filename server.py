@@ -31,7 +31,7 @@ def handle(client):
             if message.decode("utf-8").endswith("exit"):
                 raise Exception(f'Usuário {client} saiu do chat!')
             broadcast(message)
-            print(message)
+            #print(message)
         except:
             if client in clients:
                 index = clients.index(client)
@@ -63,15 +63,15 @@ def write():
     while True:
         message = f'Server: {input("")}'
         broadcast(message.encode('utf-8'))
-        print(message)
+        #print(message)
 
 print("Servidor operando!")
 
+write_thread = threading.Thread(target=write)
+write_thread.start()
 
 try:
     receive()
-    write_thread = threading.Thread(target=write)
-    write_thread.start()
 except KeyboardInterrupt:
     print("Desligando...")
     broadcast("Servidor foi tirado do ar")
