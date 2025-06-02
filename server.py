@@ -1,7 +1,6 @@
-import threading
-import socket
+import threading 
+import socket 
 
-# host = '127.0.0.1'
 port = 55555
 
 hostName = socket.gethostname()
@@ -22,33 +21,46 @@ def handle(client):
     while True:
         try:
             message = client.recv(1024)
+            print(message.decode('utf-8'))
             broadcast(message)
         except:
             index = clients.index(client)
             clients.remove(client)
             client.close()
+
             nickname = nicknames[index]
-            broadcast(f'{nickname} left the chat!'.encode('utf-8'))
+            broadcast(f'{nickname} saiu do chat!'.encode('utf-8'))
             nicknames.remove(nickname)
             break
 
 def receive():
     while True:
         client, address = server.accept()
-        print(f"Connected with {str(address)}")
+        print(f"Conectado com as credenciais: {str(address)}")
 
         client.send('NICK'.encode('utf-8'))
         nickname = client.recv(1024).decode('utf-8')
+
         nicknames.append(nickname)
         clients.append(client)
 
-        print(f"Nickname of the client is {nickname}!")
-        broadcast(f'{nickname} joined the chat!'.encode('utf-8'))
-        client.send('Connected to the server!'.encode('utf-8'))
+        print(f"Nome do cliente: {nickname}!")
+        broadcast(f'{nickname} entrou no chat!'.encode('utf-8'))
+        client.send('Conectado ao servidor!'.encode('utf-8'))
 
         thread = threading.Thread(target=handle, args=(client,))
         thread.start()
 
-print("Server is listening...")
+def server_input():
+    while True:
+        msg = input()
+        broadcast(f'Servidor: {msg}'.encode('utf-8'))
+
+
+print("Servidor ativo...")
 print(f"IP - {ipAdd}")
+
+input_thread = threading.Thread(target=server_input)
+input_thread.start()
+
 receive()
