@@ -28,7 +28,6 @@ def write():
     while True:
         message = input("")
         if message.lower() == "/sair":
-            client.send(f'{nickname} saiu do chat.'.encode('utf-8'))
             client.close()
             print("Você saiu do chat!")
             break

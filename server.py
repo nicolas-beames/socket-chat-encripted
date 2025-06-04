@@ -66,6 +66,7 @@ def write():
         broadcast(message.encode('utf-8'))
 
 print("Servidor operando!")
+print(f"IP: {ipAdd}")
 
 write_thread = threading.Thread(target=write)
 write_thread.start()
