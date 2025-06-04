@@ -18,7 +18,7 @@ def broadcast(message):
     # checka se a lista de clientes está vazia
     # caso esteja, não há broadcast, apenas exibe
     # a mensagem para o Servidor
-    print(message)
+    print(message.decode("utf-8"))
     # envia a mensagem para todos na lista de clientes
     for client in clients:
         client.send(message)
@@ -61,8 +61,12 @@ def receive():
 
 def write():
     while True:
-        message = f'Server: {input("")}'
+        msgServer = input("")
+        message = f'Server: {msgServer}'
         broadcast(message.encode('utf-8'))
+        if msgServer == "/sair":
+            server.close()
+
 
 print("Servidor operando!")
 print(f"IP: {ipAdd}")
