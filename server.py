@@ -1,5 +1,5 @@
-import threading 
-import socket 
+import threading
+import socket
 
 port = 55555
 
@@ -39,7 +39,7 @@ def handle(client):
                 clients.remove(client)
                 client.close()
                 nickname = nicknames[index]
-                broadcast(f"{nickname.decode('utf-8')} saiu do chat".encode("utf-8"))
+                broadcast(f"{nickname} saiu do chat".encode("utf-8"))
                 nicknames.remove(nickname)
             break
 
