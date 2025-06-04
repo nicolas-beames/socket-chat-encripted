@@ -3,10 +3,12 @@ import threading
 
 nickname = input("Escolha um nome: ")
 
+nickname = input("Digite seu username: ")
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 ip = input("IP do servidor:")
 client.connect((ip, 55555))
+
 
 def receive():
     while True:
@@ -20,6 +22,7 @@ def receive():
             if client.fileno() == -1:
                 break 
             print("Ocorreu um erro ao receber mensagem.")
+
             client.close()
             break
 
@@ -33,7 +36,6 @@ def write():
             break
         else:
             client.send(f'{nickname}: {message}'.encode('utf-8'))
-
 
 receive_thread = threading.Thread(target=receive)
 receive_thread.start()

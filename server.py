@@ -13,7 +13,13 @@ server.listen()
 clients = []
 nicknames = []
 
+
 def broadcast(message):
+    # checka se a lista de clientes está vazia
+    # caso esteja, não há broadcast, apenas exibe
+    # a mensagem para o Servidor
+    print(message)
+    # envia a mensagem para todos na lista de clientes
     for client in clients:
         client.send(message)
 
@@ -21,46 +27,55 @@ def handle(client):
     while True:
         try:
             message = client.recv(1024)
-            print(message.decode('utf-8'))
+            if not message:
+                raise Exception(f'Usuário {client} desconectado!')
+            if message.decode("utf-8").endswith("exit"):
+                raise Exception(f'Usuário {client} saiu do chat!')
+
             broadcast(message)
         except:
-            index = clients.index(client)
-            clients.remove(client)
-            client.close()
-
-            nickname = nicknames[index]
-            broadcast(f'{nickname} saiu do chat!'.encode('utf-8'))
-            nicknames.remove(nickname)
+            if client in clients:
+                index = clients.index(client)
+                clients.remove(client)
+                client.close()
+                nickname = nicknames[index]
+                broadcast(f"{nickname.decode('utf-8')} saiu do chat".encode("utf-8"))
+                nicknames.remove(nickname)
             break
 
 def receive():
     while True:
         client, address = server.accept()
-        print(f"Conectado com as credenciais: {str(address)}")
+        print(f"Conectado com {str(address)}")
 
         client.send('NICK'.encode('utf-8'))
         nickname = client.recv(1024).decode('utf-8')
-
         nicknames.append(nickname)
         clients.append(client)
 
-        print(f"Nome do cliente: {nickname}!")
+        print(f"Apelido: {nickname}!")
         broadcast(f'{nickname} entrou no chat!'.encode('utf-8'))
-        client.send('Conectado ao servidor!'.encode('utf-8'))
+        client.send('Conectado!'.encode('utf-8'))
 
         thread = threading.Thread(target=handle, args=(client,))
         thread.start()
 
-def server_input():
+def write():
     while True:
-        msg = input()
-        broadcast(f'Servidor: {msg}'.encode('utf-8'))
+        message = f'Server: {input("")}'
+        broadcast(message.encode('utf-8'))
 
+print("Servidor operando!")
 
-print("Servidor ativo...")
-print(f"IP - {ipAdd}")
+write_thread = threading.Thread(target=write)
+write_thread.start()
 
-input_thread = threading.Thread(target=server_input)
-input_thread.start()
-
-receive()
+try:
+    receive()
+except KeyboardInterrupt:
+    print("Desligando...")
+    broadcast("Servidor foi tirado do ar")
+    for client in clients:
+        client.close()
+    server.close()
+    print("Servidor offline")
