@@ -1,12 +1,13 @@
-import threading
-import socket
+import threading 
+import socket 
 
-
-host = '127.0.0.1'
 port = 55555
 
+hostName = socket.gethostname()
+ipAdd = socket.gethostbyname(hostName)
+
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind((host, port))
+server.bind((ipAdd, port))
 server.listen()
 
 clients = []
@@ -30,15 +31,15 @@ def handle(client):
                 raise Exception(f'Usuário {client} desconectado!')
             if message.decode("utf-8").endswith("exit"):
                 raise Exception(f'Usuário {client} saiu do chat!')
+
             broadcast(message)
-            #print(message)
         except:
             if client in clients:
                 index = clients.index(client)
                 clients.remove(client)
                 client.close()
                 nickname = nicknames[index]
-                broadcast(f"{nickname.decode('utf-8')} saiu do chat ;-;".encode("ascii"))
+                broadcast(f"{nickname.decode('utf-8')} saiu do chat".encode("utf-8"))
                 nicknames.remove(nickname)
             break
 
@@ -63,7 +64,6 @@ def write():
     while True:
         message = f'Server: {input("")}'
         broadcast(message.encode('utf-8'))
-        #print(message)
 
 print("Servidor operando!")
 

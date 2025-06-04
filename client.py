@@ -1,10 +1,13 @@
 import socket
 import threading
 
+nickname = input("Escolha um nome: ")
 
 nickname = input("Digite seu username: ")
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(('127.0.0.1', 55555))
+
+ip = input("IP do servidor:")
+client.connect((ip, 55555))
 
 
 def receive():
@@ -16,21 +19,29 @@ def receive():
             else:
                 print(message)
         except:
-            print("Fechando conexão...")
+            if client.fileno() == -1:
+                break 
+            print("Ocorreu um erro ao receber mensagem.")
+
             client.close()
             break
 
 def write():
     while True:
-        message = f'{nickname}: {input("")}'
-        client.send(message.encode("utf-8"))
-
-        if message.endswith("sair"):
+        message = input("")
+        if message.lower() == "/sair":
+            client.send(f'{nickname} saiu do chat.'.encode('utf-8'))
             client.close()
+            print("Você saiu do chat!")
             break
+        else:
+            client.send(f'{nickname}: {message}'.encode('utf-8'))
 
 receive_thread = threading.Thread(target=receive)
 receive_thread.start()
 
 write_thread = threading.Thread(target=write)
 write_thread.start()
+
+write_thread.join()
+receive_thread.join()
