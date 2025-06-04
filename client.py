@@ -1,9 +1,7 @@
 import socket
 import threading
 
-nickname = input("Escolha um nome: ")
-
-nickname = input("Digite seu username: ")
+nickname = input("Escolha um apelido: ")
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 ip = input("IP do servidor:")
