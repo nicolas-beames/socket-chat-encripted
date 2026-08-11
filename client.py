@@ -7,6 +7,15 @@ nickname = input("Digite seu username: ")
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 ip = input("IP do servidor:")
+
+cifras = ["caesar", 'monoalphabetic', "playfair", "vigenere"]
+
+for cifra in cifras:
+    print(cifra)
+
+cypher = input("Qual cifra gostaria de usar?")
+key = input("insert the key")
+
 client.connect((ip, 55555))
 
 
