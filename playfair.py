@@ -42,68 +42,65 @@ def create_matrix(key: str):
     ]
 
 
-class Playfair:
+def encrypt(message: str, key: str):
+    digraphs = create_digraphs(message)
+    matrix = create_matrix(key)
+    encrypted_message = ""
 
-    @staticmethod
-    def encode(message: str, key: str):
-        digraphs = create_digraphs(message)
-        matrix = create_matrix(key)
-        encoded_message = ""
+    for digraph in digraphs:
+        pos1 = 0, 0
+        pos2 = 0, 0
+        for i, line in enumerate(matrix):
+            for j, item in enumerate(line):
+                if item == digraph[0]:
+                    pos1 = i, j
+                if item == digraph[1]:
+                    pos2 = i, j
 
-        for digraph in digraphs:
-            pos1 = 0, 0
-            pos2 = 0, 0
-            for i, line in enumerate(matrix):
-                for j, item in enumerate(line):
-                    if item == digraph[0]:
-                        pos1 = i, j
-                    if item == digraph[1]:
-                        pos2 = i, j
+        if pos1[0] == pos2[0]:
+            pos1 = pos1[0], (pos1[1] + 1) if pos1[1] < 4 else 0
+            pos2 = pos2[0], (pos2[1] + 1) if pos2[1] < 4 else 0
+        elif pos1[1] == pos2[1]:
+            pos1 = (pos1[0] + 1) if pos1[0] < 4 else 0, pos1[1]
+            pos2 = (pos2[0] + 1) if pos2[0] < 4 else 0, pos2[1]
+        else:
+            encrypted_message = f"{encrypted_message}{matrix[pos1[0]][pos2[1]]}{matrix[pos2[0]][pos1[1]]}"
+            continue
 
-            if pos1[0] == pos2[0]:
-                pos1 = pos1[0], (pos1[1] + 1) if pos1[1] < 4 else 0
-                pos2 = pos2[0], (pos2[1] + 1) if pos2[1] < 4 else 0
-            elif pos1[1] == pos2[1]:
-                pos1 = (pos1[0] + 1) if pos1[0] < 4 else 0, pos1[1]
-                pos2 = (pos2[0] + 1) if pos2[0] < 4 else 0, pos2[1]
-            else:
-                encoded_message = f"{encoded_message}{matrix[pos1[0]][pos2[1]]}{matrix[pos2[0]][pos1[1]]}"
-                continue
+        encrypted_message = (
+            f"{encrypted_message}{matrix[pos1[0]][pos1[1]]}{matrix[pos2[0]][pos2[1]]}"
+        )
 
-            encoded_message = (
-                f"{encoded_message}{matrix[pos1[0]][pos1[1]]}{matrix[pos2[0]][pos2[1]]}"
-            )
+    return encrypted_message
 
-        return encoded_message
 
-    @staticmethod
-    def decode(message: str, key: str):
-        digraphs = create_digraphs(message)
-        matrix = create_matrix(key)
-        decoded_message = ""
+def decrypt(message: str, key: str):
+    digraphs = create_digraphs(message)
+    matrix = create_matrix(key)
+    decrypted_message = ""
 
-        for digraph in digraphs:
-            pos1 = 0, 0
-            pos2 = 0, 0
-            for i, line in enumerate(matrix):
-                for j, item in enumerate(line):
-                    if item == digraph[0]:
-                        pos1 = i, j
-                    if item == digraph[1]:
-                        pos2 = i, j
+    for digraph in digraphs:
+        pos1 = 0, 0
+        pos2 = 0, 0
+        for i, line in enumerate(matrix):
+            for j, item in enumerate(line):
+                if item == digraph[0]:
+                    pos1 = i, j
+                if item == digraph[1]:
+                    pos2 = i, j
 
-            if pos1[0] == pos2[0]:
-                pos1 = pos1[0], (pos1[1] - 1) if pos1[1] > 0 else 4
-                pos2 = pos2[0], (pos2[1] - 1) if pos2[1] > 0 else 4
-            elif pos1[1] == pos2[1]:
-                pos1 = (pos1[0] - 1) if pos1[0] > 0 else 4, pos1[1]
-                pos2 = (pos2[0] - 1) if pos2[0] > 0 else 4, pos2[1]
-            else:
-                decoded_message = f"{decoded_message}{matrix[pos1[0]][pos2[1]]}{matrix[pos2[0]][pos1[1]]}"
-                continue
+        if pos1[0] == pos2[0]:
+            pos1 = pos1[0], (pos1[1] - 1) if pos1[1] > 0 else 4
+            pos2 = pos2[0], (pos2[1] - 1) if pos2[1] > 0 else 4
+        elif pos1[1] == pos2[1]:
+            pos1 = (pos1[0] - 1) if pos1[0] > 0 else 4, pos1[1]
+            pos2 = (pos2[0] - 1) if pos2[0] > 0 else 4, pos2[1]
+        else:
+            decrypted_message = f"{decrypted_message}{matrix[pos1[0]][pos2[1]]}{matrix[pos2[0]][pos1[1]]}"
+            continue
 
-            encoded_message = (
-                f"{decoded_message}{matrix[pos1[0]][pos1[1]]}{matrix[pos2[0]][pos2[1]]}"
-            )
+        decrypted_message = (
+            f"{decrypted_message}{matrix[pos1[0]][pos1[1]]}{matrix[pos2[0]][pos2[1]]}"
+        )
 
-        return decoded_message
+    return decrypted_message

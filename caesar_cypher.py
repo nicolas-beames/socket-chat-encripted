@@ -2,6 +2,7 @@ import string
 
 
 def normalize_key(key: int):
+    key = int(key)
     return key % 26
 
 
