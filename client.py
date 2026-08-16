@@ -4,6 +4,9 @@ import unicodedata
 from types import FunctionType
 
 import caesar_cypher
+import monoalphabetic
+import playfair
+import vigenere
 
 nickname = input("Escolha um nome: ")
 
@@ -11,11 +14,11 @@ nickname = input("Digite seu username: ")
 
 print("Escolha uma cifra para criptografia:")
 print("1 - Sem Criptografia")
-print("2 - Cifra de César")
-print("3 - Cifra Monoalfabética")
-print("4 - Cifra de Playfair")
-print("5 - Cifra de Vigenère")
 
+cifras = ["Caesar", "Monoalphabetic", "Playfair", "Vigenère"]
+
+for i, cifra in enumerate(cifras):
+    print(f"{i + 2} - {cifra}")
 
 selected_cipher = int(input(""))
 
@@ -30,24 +33,20 @@ match selected_cipher:
         encrypt_method = caesar_cypher.encrypt
         decrypt_method = caesar_cypher.decrypt
     case 3:
-        print("Cifra Monoalfabética")
+        encrypt_method = monoalphabetic.encrypt
+        decrypt_method = monoalphabetic.decrypt
     case 4:
         encrypt_method = playfair.encrypt
         decrypt_method = playfair.decrypt
     case 5:
-        # Cifra de Vigenère
+        encrypt_method = vigenere.encrypt
+        decrypt_method = vigenere.decrypt
+
+key = input("insert the key: ")
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 ip = input("IP do servidor:")
-
-cifras = ["caesar", 'monoalphabetic', "playfair", "vigenere"]
-
-for cifra in cifras:
-    print(cifra)
-
-cypher = input("Qual cifra gostaria de usar?")
-key = input("insert the key")
 
 client.connect((ip, 55555))
 
@@ -69,7 +68,11 @@ def receive():
             if message == "NICK":
                 client.send(nickname.encode("utf-8"))
             else:
-                print(message)
+                msg = message.split(":", 1)
+                if len(msg) > 1:
+                    print(f"{msg[0]}: {decrypt_method(msg[1].strip(), key)}")
+                else:
+                    print(message)
         except:
             if client.fileno() == -1:
                 break
@@ -88,6 +91,8 @@ def write():
             print("Você saiu do chat!")
             break
         else:
+            message = normalize_message(message)
+            message = encrypt_method(message, key)
             client.send(f"{nickname}: {message}".encode("utf-8"))
 
 
@@ -99,4 +104,3 @@ write_thread.start()
 
 write_thread.join()
 receive_thread.join()
-
