@@ -1,17 +1,24 @@
-class CaesarCypher:
+import string
 
-    max_value = 1114111
 
-    @staticmethod
-    def encrypt(msg: str, key: int) -> str:
-        ascii_msg = list(map(ord, msg))
-        ascii_msg = list(map(lambda x: (x + key) % CaesarCypher.max_value, ascii_msg))
-        msg = "".join(map(chr, ascii_msg))
-        return msg
+def normalize_key(key: int):
+    return key % 26
 
-    @staticmethod
-    def decrypt(msg: str, key: int) -> str:
-        ascii_msg = list(map(ord, msg))
-        ascii_msg = list(map(lambda x: (x - key) % CaesarCypher.max_value, ascii_msg))
-        msg = "".join(map(chr, ascii_msg))
-        return msg
+
+def shift_alphabet(key: int):
+    alphabet = list(string.ascii_uppercase)
+    for _ in range(key):
+        alphabet.append(alphabet.pop(0))
+    return "".join(alphabet)
+
+
+def encrypt(msg: str, key: int) -> str:
+    return msg.translate(
+        str.maketrans(string.ascii_uppercase, shift_alphabet(normalize_key(key)))
+    )
+
+
+def decrypt(msg: str, key: int) -> str:
+    return msg.translate(
+        str.maketrans(shift_alphabet(normalize_key(key)), string.ascii_uppercase)
+    )
