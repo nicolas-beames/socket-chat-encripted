@@ -1,85 +1,128 @@
 import socket
 import threading
 
-port = 55555
-
-hostName = socket.gethostname()
-ipAdd = socket.gethostbyname(hostName)
-
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind((ipAdd, port))
-server.listen()
-
-clients = []
-nicknames = []
+PORT = 55555
 
 
-def broadcast(message):
-    # checka se a lista de clientes está vazia
-    # caso esteja, não há broadcast, apenas exibe
-    # a mensagem para o Servidor
-    print(message.decode())
-    # envia a mensagem para todos na lista de clientes
-    for client in clients:
-        client.send(message)
+class ChatServer:
+    def __init__(self, port: int = PORT) -> None:
+        self.port = port
+        self.host_ip = socket.gethostbyname(socket.gethostname())
 
+        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server.bind((self.host_ip, self.port))
+        self.server.listen()
 
-def handle(client):
-    while True:
+        self.clients: dict[socket.socket, str] = {}
+        self.lock = threading.Lock()
+        self.running = True
+
+    def broadcast(self, message: bytes, exclude: socket.socket | None = None):
+        print(message.decode("utf-8", errors="replace"))
+
+        with self.lock:
+            targets = list(self.clients.keys())
+
+        for client in targets:
+            if client is exclude:
+                continue
+            try:
+                client.send(message)
+            except OSError:
+                self.disconnect(client, notify=False)
+
+    def disconnect(self, client: socket.socket, notify: bool = True):
+        with self.lock:
+            nickname = self.clients.pop(client, None)
+
+        if nickname is None:
+            return
+
         try:
-            message = client.recv(1024)
+            client.close()
+        except OSError:
+            pass
+
+        if notify:
+            self.broadcast(f"{nickname} saiu do chat".encode("utf-8"))
+
+    def handle(self, client: socket.socket):
+        while self.running:
+            try:
+                message = client.recv(1024)
+            except OSError:
+                break
+
             if not message:
-                raise Exception(f"Usuário {client} desconectado!")
-            if message.decode("utf-8").endswith("exit"):
-                raise Exception(f"Usuário {client} saiu do chat!")
+                break
 
-            broadcast(message)
-        except:
-            if client in clients:
-                index = clients.index(client)
-                clients.remove(client)
+            if message.decode("utf-8", errors="replace").strip().endswith("exit"):
+                break
+
+            self.broadcast(message)
+
+        self.disconnect(client)
+
+    def receive(self):
+        while self.running:
+            try:
+                client, address = self.server.accept()
+            except OSError:
+                break
+
+            print(f"Conectado com {address}")
+
+            try:
+                client.send("NICK".encode("utf-8"))
+                nickname = client.recv(1024).decode("utf-8")
+            except OSError:
                 client.close()
-                nickname = nicknames[index]
-                broadcast(f"{nickname} saiu do chat".encode("utf-8"))
-                nicknames.remove(nickname)
-            break
+                continue
+
+            with self.lock:
+                self.clients[client] = nickname
+
+            print(f"Apelido: {nickname}")
+            self.broadcast(
+                f"{nickname} entrou no chat!".encode("utf-8"), exclude=client
+            )
+            client.send("Conectado!".encode("utf-8"))
+
+            threading.Thread(target=self.handle, args=(client,), daemon=True).start()
+
+    def write(self):
+        while self.running:
+            try:
+                text = input("")
+            except OSError:
+                break
+            self.broadcast(f"Server: {text}".encode("utf-8"))
+
+    def shutdown(self):
+        self.running = False
+        self.broadcast("Servidor foi tirado do ar".encode("utf-8"))
+
+        with self.lock:
+            clients = list(self.clients.keys())
+        for client in clients:
+            client.close()
+
+        self.server.close()
+        print("Servidor offline")
+
+    def start(self):
+        print(f"Servidor operando em {self.host_ip}:{self.port}!")
+        threading.Thread(target=self.write, daemon=True).start()
+
+        try:
+            self.receive()
+        except KeyboardInterrupt:
+            print("\nDesligando...")
+        finally:
+            # pass
+            self.shutdown()
 
 
-def receive():
-    while True:
-        client, address = server.accept()
-        print(f"Conectado com {str(address)}")
-
-        client.send("NICK".encode("utf-8"))
-        nickname = client.recv(1024).decode("utf-8")
-        nicknames.append(nickname)
-        clients.append(client)
-
-        print(f"Apelido: {nickname}!")
-        broadcast(f"{nickname} entrou no chat!".encode("utf-8"))
-        client.send("Conectado!".encode("utf-8"))
-
-        thread = threading.Thread(target=handle, args=(client,))
-        thread.start()
-
-
-def write():
-    while True:
-        message = f'Server: {input("")}'
-        broadcast(message.encode("utf-8"))
-
-
-print("Servidor operando!")
-
-write_thread = threading.Thread(target=write)
-write_thread.start()
-
-try:
-    receive()
-except KeyboardInterrupt:
-    print("Desligando...")
-    broadcast("Servidor foi tirado do ar")
-    for client in clients:
-        client.close()
-    server.close()
-    print("Servidor offline")
+if __name__ == "__main__":
+    ChatServer().start()
