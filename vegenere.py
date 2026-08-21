@@ -22,7 +22,7 @@ class Vegenere:
 
             encrypted_msg.append(matrices[pos_ver][pos_hor])
 
-        return encrypted_msg
+        return "".join(encrypted_msg)
 
     def decrypt(self, msg:list, key:str) -> list:
         msg_list = list(msg)
@@ -41,7 +41,7 @@ class Vegenere:
 
             decrypted_msg.append(matrices[0][pos_hor])                
 
-        return decrypted_msg
+        return "".join(decrypted_msg)
 
     def key_list(self, key:str, msg_size:int) -> list:
         repeated_key = []
@@ -73,3 +73,13 @@ class Vegenere:
             matrice_list.append(self.shift(alphabet_list, i))
 
         return matrice_list
+
+
+# i = Vegenere()
+
+# enc = i.encrypt("atacarbasenorte", "fogo")
+
+# print(enc)
+
+
+# print(i.decrypt(enc, "fogo"))

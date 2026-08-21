@@ -13,7 +13,7 @@ def encrypt(message, key):
         except:
             pass
 
-    return encrypted_message
+    return "".join(encrypted_message)
 
 
 def decrypt(message, key):
@@ -27,4 +27,4 @@ def decrypt(message, key):
         except:
             pass
     
-    return decrypted_message
+    return "".join(decrypted_message)
