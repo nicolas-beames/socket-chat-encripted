@@ -33,6 +33,7 @@ def encrypt(message: str, key: str) -> str:
 
     encrypted_message = bytes(a ^ b for a, b in zip(k, p))
     ascii_values = [byte for byte in encrypted_message]
+    # print(ascii_values)
     encrypted_message = from_ascii_list(ascii_values)
 
     return encrypted_message

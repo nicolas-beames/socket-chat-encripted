@@ -7,6 +7,7 @@ import caesar_cypher
 import monoalphabetic
 import playfair
 import vigenere
+import rc4
 
 DEBUG_MODE = False
 PORT = 55555
@@ -17,6 +18,7 @@ CIPHERS: dict[int, tuple[str, Callable, Callable]] = {
     3: ("Monoalphabetic", monoalphabetic.encrypt, monoalphabetic.decrypt),
     4: ("Playfair", playfair.encrypt, playfair.decrypt),
     5: ("Vigenère", vigenere.Vigenere().encrypt, vigenere.Vigenere().decrypt),
+    6: ("rc4", rc4.encrypt, rc4.decrypt)    
 }
 
 
